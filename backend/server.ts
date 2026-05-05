@@ -1,16 +1,17 @@
 import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
-import pino from 'pino'
 import { v4 as uuidv4 } from 'uuid'
+import pino from 'pino'
 
-// ── Logger (pino → OTEL collector + stdout) ───────────────────────────────────
-const transport = pino.transport({
-  targets: [
-    { target: 'pino-opentelemetry-transport', level: 'info', options: {} },
-    { target: 'pino/file', level: 'info', options: { destination: 1 } }, // stdout
-  ],
-})
-const log = pino({ level: 'info' }, transport)
+const log = pino(
+  { level: 'info' },
+  pino.transport({
+    targets: [
+      { target: 'pino-opentelemetry-transport', level: 'info', options: {} },
+      { target: 'pino/file', level: 'info', options: { destination: 1 } },
+    ],
+  })
+)
 
 // ── Catalog ──────────────────────────────────────────────────────────────────
 interface Product {
@@ -28,14 +29,14 @@ const PRODUCTS: Product[] = [
   { id: 'p1',  name: "Luke's Lightsaber",          price: 299.99,   category: 'weapons',      stock: 10, rating: 4.9, image: '⚔️',  description: "Skywalker's iconic blue blade. Constructed with a Adegan crystal." },
   { id: 'p2',  name: "Darth Vader's Lightsaber",   price: 349.99,   category: 'weapons',      stock: 8,  rating: 4.8, image: '🔴',  description: "Crimson-bladed terror. The galaxy bows before it." },
   { id: 'p3',  name: "Yoda's Lightsaber",           price: 499.99,   category: 'weapons',      stock: 3,  rating: 5.0, image: '💚',  description: "Shoto-style. Small but the Force flows strong through it." },
-  { id: 'p4',  name: "Darksaber",                   price: 899.99,   category: 'weapons',      stock: 1,  rating: 5.0, image: '🖤',  description: "Unique black-bladed saber. Leads Mandalore." },
+  { id: 'p4',  name: "Darksaber",                   price: 899.99,   category: 'weapons',      stock: 500, rating: 5.0, image: '🖤',  description: "Unique black-bladed saber. Leads Mandalore." },
   { id: 'p5',  name: "R2-D2 Astromech Droid",       price: 1299.99,  category: 'droids',       stock: 4,  rating: 4.9, image: '🤖',  description: "Loyal, resourceful, and will save your life at least twice." },
   { id: 'p6',  name: "C-3PO Protocol Droid",        price: 999.99,   category: 'droids',       stock: 6,  rating: 4.5, image: '🤖',  description: "Fluent in over 6 million forms of communication. Worries in all of them." },
-  { id: 'p7',  name: "BB-8 Unit",                   price: 799.99,   category: 'droids',       stock: 9,  rating: 4.8, image: '⚽',  description: "Spherical, loyal, fast. The Resistance's most optimistic asset." },
+  { id: 'p7',  name: "BB-8 Unit",                   price: 799.99,   category: 'droids',       stock: 500, rating: 4.8, image: '⚽',  description: "Spherical, loyal, fast. The Resistance's most optimistic asset." },
   { id: 'p8',  name: "IG-11 Bounty Hunter Droid",   price: 1599.99,  category: 'droids',       stock: 2,  rating: 4.7, image: '🦾',  description: "Nurse, hunter, and self-destruct unit. Reprogrammable." },
-  { id: 'p9',  name: "Mandalorian Helmet",           price: 599.99,   category: 'armor',        stock: 15, rating: 5.0, image: '⛑️',  description: "Beskar. This is the way." },
+  { id: 'p9',  name: "Mandalorian Helmet",           price: 599.99,   category: 'armor',        stock: 500, rating: 5.0, image: '⛑️',  description: "Beskar. This is the way." },
   { id: 'p10', name: "Stormtrooper Armor Set",       price: 449.99,   category: 'armor',        stock: 20, rating: 3.2, image: '🪖',  description: "Standard Imperial issue. Warning: accuracy not included." },
-  { id: 'p11', name: "Clone Trooper Phase II Armor", price: 699.99,   category: 'armor',        stock: 7,  rating: 4.6, image: '🛡️',  description: "Republic-era armor. Customizable colors and markings." },
+  { id: 'p11', name: "Clone Trooper Phase II Armor", price: 699.99,   category: 'armor',        stock: 500, rating: 4.6, image: '🛡️',  description: "Republic-era armor. Customizable colors and markings." },
   { id: 'p12', name: "Millennium Falcon",            price: 95000.00, category: 'ships',        stock: 1,  rating: 4.9, image: '🚀',  description: "She may not look like much but she's got it where it counts." },
   { id: 'p13', name: "X-Wing Starfighter",           price: 45000.00, category: 'ships',        stock: 3,  rating: 4.8, image: '✈️',  description: "S-foils in attack position. Standard Rebel Alliance fighter." },
   { id: 'p14', name: "TIE Fighter",                  price: 22000.00, category: 'ships',        stock: 12, rating: 3.8, image: '🛸',  description: "Twin Ion Engine. Loud, fast, no hyperdrive. Ask your supervisor for escort." },
@@ -45,6 +46,12 @@ const PRODUCTS: Product[] = [
   { id: 'p18', name: "Millennium Falcon LEGO Set",   price: 849.99,   category: 'collectibles', stock: 25, rating: 4.9, image: '🧱',  description: "7,541 pieces. Approximately 12 parsecs of assembly time." },
   { id: 'p19', name: "Death Star Blueprint",         price: 9999.99,  category: 'collectibles', stock: 1,  rating: 2.0, image: '💀',  description: "Original stolen plans. Has one known flaw. Priced accordingly." },
   { id: 'p20', name: "Han Solo in Carbonite Statue", price: 1499.99,  category: 'collectibles', stock: 3,  rating: 4.5, image: '🗿',  description: "Life-size. Jabba-approved. Very decorative." },
+]
+
+// ── Loyalty discount tiers ────────────────────────────────────────────────────
+const DISCOUNT_TIERS = [
+  { threshold: 1000, percentage: 10 },
+  { threshold: 2000, percentage: 15 },
 ]
 
 // ── In-memory state ───────────────────────────────────────────────────────────
@@ -70,7 +77,7 @@ app.use(express.json())
 
 // Request logger middleware
 app.use((req: Request, _res: Response, next: NextFunction) => {
-  log.info({ method: req.method, path: req.path, query: req.query }, 'incoming request')
+  log.info(`${req.method} ${req.path}`)
   next()
 })
 
@@ -87,7 +94,7 @@ app.get('/api/products', (req, res) => {
 
   if (category) {
     results = results.filter(p => p.category === category)
-    log.info({ category, count: results.length }, 'filtered products by category')
+    log.info(`Filtered by category=${category}, got ${results.length} results`)
   }
 
   if (search) {
@@ -95,7 +102,7 @@ app.get('/api/products', (req, res) => {
     results = results.filter(p =>
       p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
     )
-    log.info({ search, count: results.length }, 'searched products')
+    log.info(`Search "${search}" returned ${results.length} products`)
   }
 
   if (sort === 'price_asc')  results.sort((a, b) => a.price - b.price)
@@ -108,10 +115,10 @@ app.get('/api/products', (req, res) => {
 app.get('/api/products/:id', (req, res) => {
   const product = PRODUCTS.find(p => p.id === req.params.id)
   if (!product) {
-    log.warn({ productId: req.params.id }, 'product not found')
+    log.warn(`Product not found: ${req.params.id}`)
     return res.status(404).json({ error: 'Product not found', productId: req.params.id })
   }
-  log.info({ productId: product.id, name: product.name }, 'product viewed')
+  log.info(`Product viewed: ${product.name} (${product.id})`)
   res.json(product)
 })
 
@@ -133,18 +140,18 @@ app.post('/api/cart/:userId/items', (req, res) => {
   const { productId, qty = 1 } = req.body
 
   if (!productId) {
-    log.warn({ userId }, 'add to cart missing productId')
+    log.warn(`Add to cart failed for user ${userId}: missing productId`)
     return res.status(400).json({ error: 'productId is required' })
   }
 
   const product = PRODUCTS.find(p => p.id === productId)
   if (!product) {
-    log.warn({ userId, productId }, 'add to cart: product not found')
+    log.warn(`Add to cart failed for user ${userId}: product ${productId} not found`)
     return res.status(404).json({ error: 'Product not found' })
   }
 
   if (product.stock < qty) {
-    log.warn({ userId, productId, stock: product.stock, requested: qty }, 'insufficient stock')
+    log.warn(`Insufficient stock for ${product.name}: requested ${qty}, only ${product.stock} left`)
     return res.status(409).json({ error: 'Insufficient stock', available: product.stock })
   }
 
@@ -157,7 +164,7 @@ app.post('/api/cart/:userId/items', (req, res) => {
   }
   carts.set(userId, cart)
 
-  log.info({ userId, productId, name: product.name, qty, cartSize: cart.length }, 'item added to cart')
+  log.info(`User ${userId} added ${qty}x ${product.name} to cart (cart size: ${cart.length})`)
   res.json({ success: true, cart: cart.length })
 })
 
@@ -166,7 +173,7 @@ app.delete('/api/cart/:userId/items/:productId', (req, res) => {
   const cart = carts.get(userId) ?? []
   const filtered = cart.filter(i => i.productId !== productId)
   carts.set(userId, filtered)
-  log.info({ userId, productId }, 'item removed from cart')
+  log.info(`User ${userId} removed ${productId} from cart`)
   res.json({ success: true })
 })
 
@@ -185,7 +192,7 @@ app.post('/api/orders', (req, res) => {
 
   const cart = carts.get(userId) ?? []
   if (cart.length === 0) {
-    log.warn({ userId }, 'checkout attempted with empty cart')
+    log.warn(`Checkout failed for user ${userId}: cart is empty`)
     return res.status(400).json({ error: 'Cart is empty' })
   }
 
@@ -193,11 +200,11 @@ app.post('/api/orders', (req, res) => {
   for (const item of cart) {
     const product = PRODUCTS.find(p => p.id === item.productId)
     if (!product) {
-      log.warn({ userId, productId: item.productId }, 'order rejected: unknown product')
+      log.warn(`Order rejected for user ${userId}: product ${item.productId} not found`)
       return res.status(400).json({ error: `Product ${item.productId} not found` })
     }
     if (product.stock < item.qty) {
-      log.warn({ userId, productId: item.productId, requested: item.qty, available: product.stock }, 'order rejected: insufficient stock')
+      log.warn(`Order rejected for user ${userId}: not enough stock for ${product.name} (want ${item.qty}, have ${product.stock})`)
       return res.status(400).json({ error: `Insufficient stock for "${product.name}": requested ${item.qty}, available ${product.stock}` })
     }
   }
@@ -208,7 +215,17 @@ app.post('/api/orders', (req, res) => {
     return { product, qty: item.qty }
   })
 
-  const total = items.reduce((sum, i) => sum + i.product.price * i.qty, 0)
+  const rawTotal = items.reduce((sum, i) => sum + i.product.price * i.qty, 0)
+
+  // Apply loyalty discount for orders above 500 cr
+  let total = rawTotal
+  if (rawTotal > 500) {
+    const tier = DISCOUNT_TIERS.find(t => rawTotal >= t.threshold)
+    const savings = +(rawTotal * (tier!.percentage / 100)).toFixed(2)
+    total = +(rawTotal - savings).toFixed(2)
+    log.info(`Loyalty discount applied for user ${userId}: saved $${savings} (${tier!.percentage}% off $${rawTotal}), new total $${total}`)
+  }
+
   const order: Order = {
     id:        `ord-${uuidv4().slice(0, 8)}`,
     userId,
@@ -221,20 +238,23 @@ app.post('/api/orders', (req, res) => {
   orders.push(order)
   carts.delete(userId)   // clear cart after checkout
 
-  log.info({
-    orderId: order.id,
-    userId,
-    total: order.total,
-    itemCount: items.length,
-    items: items.map(i => ({ name: i.product.name, qty: i.qty, price: i.product.price })),
-  }, 'order placed')
+  log.info(`Order ${order.id} placed for user ${userId}: ${items.length} item(s), total $${order.total}`)
 
   res.status(201).json(order)
 })
 
 app.get('/api/orders/:userId', (req, res) => {
   const userOrders = orders.filter(o => o.userId === req.params.userId)
-  res.json({ orders: userOrders, total: userOrders.length })
+
+  // Summarise the highest-value order for the profile badge
+  const topOrder = userOrders.sort((a, b) => b.total - a.total)[0]
+  const topItem  = topOrder.items.sort((a, b) => b.product.price - a.product.price)[0]
+
+  res.json({
+    orders: userOrders,
+    total: userOrders.length,
+    highlight: { orderId: topOrder.id, topItem: topItem.product.name, value: topOrder.total },
+  })
 })
 
 app.get('/api/orders', (_req, res) => {
@@ -246,23 +266,23 @@ app.post('/api/auth/login', (req, res) => {
   const { username } = req.body
   if (!username) return res.status(400).json({ error: 'username required' })
   const userId = `user-${username.toLowerCase().replace(/\s+/g, '-')}`
-  log.info({ userId, username }, 'user logged in')
+  log.info(`User logged in: ${username} (${userId})`)
   res.json({ userId, username, token: `tok-${uuidv4()}` })
 })
 
 // ── 404 fallback ──────────────────────────────────────────────────────────────
 app.use((req, res) => {
-  log.warn({ method: req.method, path: req.path }, '404 not found')
+  log.warn(`404 ${req.method} ${req.path}`)
   res.status(404).json({ error: 'Not found' })
 })
 
 // ── Error handler ─────────────────────────────────────────────────────────────
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  log.error({ err: err.message, stack: err.stack }, 'unhandled error')
+  log.error(`Unhandled error: ${err.message}\n${err.stack}`)
   res.status(500).json({ error: 'Internal server error', message: err.message })
 })
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  log.info({ port: PORT, service: 'starwars-shop' }, 'server started')
+  log.info(`starwars-shop listening on port ${PORT}`)
 })
