@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #0a0a0f;
+  color: #e5e5e5;
+}
+
+.star-bg {
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 60%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 10%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 80%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 90%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 35%, white 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 50%, white 0%, transparent 100%);
+}
