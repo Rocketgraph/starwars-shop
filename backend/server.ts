@@ -221,9 +221,11 @@ app.post('/api/orders', (req, res) => {
   let total = rawTotal
   if (rawTotal > 500) {
     const tier = DISCOUNT_TIERS.find(t => rawTotal >= t.threshold)
-    const savings = +(rawTotal * (tier!.percentage / 100)).toFixed(2)
-    total = +(rawTotal - savings).toFixed(2)
-    log.info(`Loyalty discount applied for user ${userId}: saved $${savings} (${tier!.percentage}% off $${rawTotal}), new total $${total}`)
+    if (tier) {
+      const savings = +(rawTotal * (tier.percentage / 100)).toFixed(2)
+      total = +(rawTotal - savings).toFixed(2)
+      log.info(`Loyalty discount applied for user ${userId}: saved $${savings} (${tier.percentage}% off $${rawTotal}), new total $${total}`)
+    }
   }
 
   const order: Order = {
