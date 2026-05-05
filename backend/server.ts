@@ -58,8 +58,19 @@ interface Order {
   createdAt: string
 }
 
+interface Coupon {
+  code: string
+  percentage: number
+  active: boolean
+}
+
 const carts  = new Map<string, CartItem[]>()
 const orders: Order[] = []
+const coupons = new Map<string, Coupon>([
+  ['JEDI10', { code: 'JEDI10', percentage: 10, active: true }],
+  ['SITH20', { code: 'SITH20', percentage: 20, active: true }],
+  ['FORCE30', { code: 'FORCE30', percentage: 30, active: false }],
+])
 
 // ── App ───────────────────────────────────────────────────────────────────────
 const app  = express()
@@ -175,6 +186,60 @@ app.delete('/api/cart/:userId', (req, res) => {
   res.json({ success: true })
 })
 
+// ── Coupons ───────────────────────────────────────────────────────────────────
+app.get('/api/coupons/:code', (req, res) => {
+  const { code } = req.params
+  const coupon = coupons.get(code.toUpperCase())
+  if (!coupon) {
+    log.warn({ code }, 'coupon not found')
+    return res.status(404).json({ error: 'Coupon not found', code })
+  }
+  if (!coupon.active) {
+    log.warn({ code }, 'coupon is inactive')
+    return res.status(410).json({ error: 'Coupon is no longer active', code })
+  }
+  log.info({ code, percentage: coupon.percentage }, 'coupon retrieved')
+  res.json({ code: coupon.code, percentage: coupon.percentage })
+})
+
+app.post('/api/cart/:userId/apply-coupon', (req, res) => {
+  const { userId } = req.params
+  const { code } = req.body
+
+  if (!code) {
+    return res.status(400).json({ error: 'coupon code is required' })
+  }
+
+  const coupon = coupons.get(code.toUpperCase())
+  if (!coupon) {
+    log.warn({ userId, code }, 'apply coupon: coupon not found')
+    return res.status(404).json({ error: 'Coupon not found', code })
+  }
+
+  if (!coupon.active) {
+    log.warn({ userId, code }, 'apply coupon: coupon inactive')
+    return res.status(410).json({ error: 'Coupon is no longer active', code })
+  }
+
+  const items = carts.get(userId) ?? []
+  if (items.length === 0) {
+    log.warn({ userId }, 'apply coupon: cart is empty')
+    return res.status(400).json({ error: 'Cart is empty' })
+  }
+
+  const enriched = items.map(item => {
+    const product = PRODUCTS.find(p => p.id === item.productId)
+    return { product, qty: item.qty }
+  }).filter(i => i.product)
+
+  const subtotal = enriched.reduce((sum, i) => sum + i.product!.price * i.qty, 0)
+  const discount = +(subtotal * coupon.percentage / 100).toFixed(2)
+  const total = +(subtotal - discount).toFixed(2)
+
+  log.info({ userId, code, percentage: coupon.percentage, subtotal, discount, total }, 'coupon applied')
+  res.json({ subtotal, discount, total, couponCode: coupon.code, percentage: coupon.percentage })
+})
+
 // ── Orders ────────────────────────────────────────────────────────────────────
 app.post('/api/orders', (req, res) => {
   const { userId } = req.body
@@ -189,12 +254,21 @@ app.post('/api/orders', (req, res) => {
     return res.status(400).json({ error: 'Cart is empty' })
   }
 
-  const items = cart.map(item => {
-    const product = PRODUCTS.find(p => p.id === item.productId)!
-    // Deduct stock (in-memory only)
+  const items: Array<{ product: Product; qty: number }> = []
+  for (const item of cart) {
+    const product = PRODUCTS.find(p => p.id === item.productId)
+    if (!product) {
+      log.warn({ userId, productId: item.productId }, 'checkout: product in cart not found, skipping')
+      continue
+    }
     product.stock = Math.max(0, product.stock - item.qty)
-    return { product, qty: item.qty }
-  })
+    items.push({ product, qty: item.qty })
+  }
+
+  if (items.length === 0) {
+    log.warn({ userId }, 'checkout: no valid products in cart')
+    return res.status(400).json({ error: 'No valid products in cart' })
+  }
 
   const total = items.reduce((sum, i) => sum + i.product.price * i.qty, 0)
   const order: Order = {
@@ -218,6 +292,17 @@ app.post('/api/orders', (req, res) => {
   }, 'order placed')
 
   res.status(201).json(order)
+})
+
+// Note: detail route must come BEFORE the :userId param route to avoid shadowing
+app.get('/api/orders/detail/:orderId', (req, res) => {
+  const { orderId } = req.params
+  const order = orders.find(o => o.id === orderId)
+  if (!order) {
+    log.warn({ orderId }, 'order not found')
+    return res.status(404).json({ error: 'Order not found', orderId })
+  }
+  res.json(order)
 })
 
 app.get('/api/orders/:userId', (req, res) => {
