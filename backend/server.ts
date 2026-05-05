@@ -189,10 +189,22 @@ app.post('/api/orders', (req, res) => {
     return res.status(400).json({ error: 'Cart is empty' })
   }
 
+  // Validate all products exist and have sufficient stock before charging
+  for (const item of cart) {
+    const product = PRODUCTS.find(p => p.id === item.productId)
+    if (!product) {
+      log.warn({ userId, productId: item.productId }, 'order rejected: unknown product')
+      return res.status(400).json({ error: `Product ${item.productId} not found` })
+    }
+    if (product.stock < item.qty) {
+      log.warn({ userId, productId: item.productId, requested: item.qty, available: product.stock }, 'order rejected: insufficient stock')
+      return res.status(400).json({ error: `Insufficient stock for "${product.name}": requested ${item.qty}, available ${product.stock}` })
+    }
+  }
+
   const items = cart.map(item => {
     const product = PRODUCTS.find(p => p.id === item.productId)!
-    // Deduct stock (in-memory only)
-    product.stock = Math.max(0, product.stock - item.qty)
+    product.stock -= item.qty
     return { product, qty: item.qty }
   })
 
