@@ -15,9 +15,8 @@ export OTEL_EXPORTER_OTLP_METRICS_PROTOCOL="http/protobuf"
 export OTEL_EXPORTER_OTLP_LOGS_PROTOCOL="http/protobuf"
 
 export OTEL_EXPORTER_OTLP_ENDPOINT="https://ingress.us-east-2.rocketgraph.app"
-export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer rg_live_xxxx"
+export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer rg_live_3e39cac127c247eaa2f7f57b0fc18437"
 
-# Disable pino auto-instrumentation — pino-opentelemetry-transport is the sole log path
 export OTEL_NODE_DISABLED_INSTRUMENTATIONS="pino"
 export OTEL_LOG_LEVEL=warn
 
