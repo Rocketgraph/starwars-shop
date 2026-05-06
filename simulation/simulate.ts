@@ -5,7 +5,7 @@
  *   - Buyer         → browses → adds multiple items → checks out
  *   - Window Shopper → browses many categories, never buys
  *   - Bargain Hunter → searches cheapest items, buys one
- *   - Chaos Monkey  → hits bad endpoints, invalid IDs, empty checkouts
+ *   - Heavy Buyer   → bulk-adds items, intended for load testing
  *
  * Usage:
  *   npx tsx simulate.ts            # steady traffic (default)
@@ -180,36 +180,6 @@ async function runBargainHunter(userId: string) {
   }
 }
 
-/** Chaos Monkey: fires bad requests to generate errors and 404s */
-async function runChaosMonkey(userId: string) {
-  log('CHAOS MONKEY', userId, 'session started — brace yourself')
-
-  const chaos: Array<() => Promise<any>> = [
-    // Non-existent product
-    () => get('/api/products/p999'),
-    () => get('/api/products/not-a-real-id'),
-    // Empty checkout
-    () => post('/api/orders', { userId: `nobody-${Date.now()}` }),
-    // Add product that doesn't exist
-    () => post(`/api/cart/${userId}/items`, { productId: 'p_fake_9999', qty: 1 }),
-    // Missing body fields
-    () => post('/api/orders', {}),
-    () => post(`/api/cart/${userId}/items`, {}),
-    // Wrong HTTP method
-    () => del('/api/products'),
-    // Massive qty
-    () => post(`/api/cart/${userId}/items`, { productId: pick(PRODUCT_IDS), qty: 99999 }),
-  ]
-
-  const steps = rand(3, 6)
-  for (let i = 0; i < steps; i++) {
-    const action = pick(chaos)
-    const { status } = await action()
-    log('CHAOS MONKEY', userId, `fired bad request → HTTP ${status}`)
-    await sleep(rand(200, 800))
-  }
-}
-
 /** Heavy buyer: bulk-adds items, intended for load testing */
 async function runHeavyBuyer(userId: string) {
   log('HEAVY BUYER', userId, 'session started — buying everything')
@@ -232,14 +202,13 @@ async function runHeavyBuyer(userId: string) {
 }
 
 // ── Session runner ────────────────────────────────────────────────────────────
-type Persona = 'buyer' | 'windowShopper' | 'bargainHunter' | 'chaos' | 'heavy'
+type Persona = 'buyer' | 'windowShopper' | 'bargainHunter' | 'heavy'
 
 const PERSONA_WEIGHTS: Persona[] = [
   'buyer', 'buyer', 'buyer',           // 30% buyer
   'windowShopper', 'windowShopper',    // 20% window shopper
   'bargainHunter', 'bargainHunter',    // 20% bargain hunter
-  'heavy', 'heavy',                    // 20% heavy buyer
-  'chaos',                             // 10% chaos monkey
+  'heavy', 'heavy', 'heavy', 'heavy',  // 40% heavy buyer
 ]
 
 async function runSession(sessionId: number) {
@@ -251,7 +220,6 @@ async function runSession(sessionId: number) {
       case 'buyer':         await runBuyer(userId);         break
       case 'windowShopper': await runWindowShopper(userId); break
       case 'bargainHunter': await runBargainHunter(userId); break
-      case 'chaos':         await runChaosMonkey(userId);   break
       case 'heavy':         await runHeavyBuyer(userId);    break
     }
   } catch (e) {

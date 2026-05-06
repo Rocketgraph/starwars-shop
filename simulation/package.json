@@ -3,11 +3,16 @@
   "version": "1.0.0",
   "scripts": {
     "start": "tsx simulate.ts",
-    "burst": "tsx simulate.ts --burst"
+    "burst": "tsx simulate.ts --burst",
+    "chaos": "tsx chaos.ts",
+    "chaos:burst": "tsx chaos.ts --burst"
   },
   "dependencies": {
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
-    "@types/node": "^20.11.0"
+    "@types/node": "^20.11.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.56.0",
+    "@opentelemetry/sdk-node": "^0.57.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.57.0"
   }
 }
