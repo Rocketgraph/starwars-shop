@@ -3,14 +3,17 @@
   "version": "1.0.0",
   "description": "Star Wars Shop — Node/Express backend with OTel instrumentation",
   "scripts": {
-    "start": "bash run.sh",
-    "dev": "tsx watch server.ts"
+    "dev": "node --env-file=.env --require tsx/cjs --watch server.ts",
+    "start": "node --env-file=.env --require tsx/cjs server.ts"
   },
   "dependencies": {
-    "@opentelemetry/auto-instrumentations-node": "^0.56.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.56.1",
+    "@opentelemetry/resources": "^2.7.1",
+    "@opentelemetry/sdk-node": "^0.216.0",
+    "@opentelemetry/semantic-conventions": "^1.40.0",
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "pino": "^10.0.0",
+    "pino": "^10.3.1",
     "pino-opentelemetry-transport": "^3.0.0",
     "uuid": "^9.0.1"
   },

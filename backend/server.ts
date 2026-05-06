@@ -1,17 +1,18 @@
+import './instrumentation'
 import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import { v4 as uuidv4 } from 'uuid'
-import pino from 'pino'
+// import pino from 'pino'
 
-const log = pino(
-  { level: 'info' },
-  pino.transport({
-    targets: [
-      { target: 'pino-opentelemetry-transport', level: 'info', options: {} },
-      { target: 'pino/file', level: 'info', options: { destination: 1 } },
-    ],
-  })
-)
+// const log = pino(
+//   { level: 'info' },
+//   pino.transport({
+//     targets: [
+//       { target: 'pino-opentelemetry-transport', level: 'info', options: {} },
+//       { target: 'pino/file', level: 'info', options: { destination: 1 } },
+//     ],
+//   })
+// )
 
 // ── Catalog ──────────────────────────────────────────────────────────────────
 interface Product {
@@ -77,7 +78,7 @@ app.use(express.json())
 
 // Request logger middleware
 app.use((req: Request, _res: Response, next: NextFunction) => {
-  log.info(`${req.method} ${req.path}`)
+  console.log(`${req.method} ${req.path}`)
   next()
 })
 
@@ -94,7 +95,7 @@ app.get('/api/products', (req, res) => {
 
   if (category) {
     results = results.filter(p => p.category === category)
-    log.info(`Filtered by category=${category}, got ${results.length} results`)
+    console.log(`Filtered by category=${category}, got ${results.length} results`)
   }
 
   if (search) {
@@ -102,7 +103,7 @@ app.get('/api/products', (req, res) => {
     results = results.filter(p =>
       p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
     )
-    log.info(`Search "${search}" returned ${results.length} products`)
+    console.log(`Search "${search}" returned ${results.length} products`)
   }
 
   if (sort === 'price_asc')  results.sort((a, b) => a.price - b.price)
@@ -115,10 +116,10 @@ app.get('/api/products', (req, res) => {
 app.get('/api/products/:id', (req, res) => {
   const product = PRODUCTS.find(p => p.id === req.params.id)
   if (!product) {
-    log.warn(`Product not found: ${req.params.id}`)
+    console.warn(`Product not found: ${req.params.id}`)
     return res.status(404).json({ error: 'Product not found', productId: req.params.id })
   }
-  log.info(`Product viewed: ${product.name} (${product.id})`)
+  console.log(`Product viewed: ${product.name} (${product.id})`)
   res.json(product)
 })
 
@@ -140,18 +141,18 @@ app.post('/api/cart/:userId/items', (req, res) => {
   const { productId, qty = 1 } = req.body
 
   if (!productId) {
-    log.warn(`Add to cart failed for user ${userId}: missing productId`)
+    console.warn(`Add to cart failed for user ${userId}: missing productId`)
     return res.status(400).json({ error: 'productId is required' })
   }
 
   const product = PRODUCTS.find(p => p.id === productId)
   if (!product) {
-    log.warn(`Add to cart failed for user ${userId}: product ${productId} not found`)
+    console.warn(`Add to cart failed for user ${userId}: product ${productId} not found`)
     return res.status(404).json({ error: 'Product not found' })
   }
 
   if (product.stock < qty) {
-    log.warn(`Insufficient stock for ${product.name}: requested ${qty}, only ${product.stock} left`)
+    console.warn(`Insufficient stock for ${product.name}: requested ${qty}, only ${product.stock} left`)
     return res.status(409).json({ error: 'Insufficient stock', available: product.stock })
   }
 
@@ -164,7 +165,7 @@ app.post('/api/cart/:userId/items', (req, res) => {
   }
   carts.set(userId, cart)
 
-  log.info(`User ${userId} added ${qty}x ${product.name} to cart (cart size: ${cart.length})`)
+  console.log(`User ${userId} added ${qty}x ${product.name} to cart (cart size: ${cart.length})`)
   res.json({ success: true, cart: cart.length })
 })
 
@@ -173,7 +174,7 @@ app.delete('/api/cart/:userId/items/:productId', (req, res) => {
   const cart = carts.get(userId) ?? []
   const filtered = cart.filter(i => i.productId !== productId)
   carts.set(userId, filtered)
-  log.info(`User ${userId} removed ${productId} from cart`)
+  console.log(`User ${userId} removed ${productId} from cart`)
   res.json({ success: true })
 })
 
@@ -192,7 +193,7 @@ app.post('/api/orders', (req, res) => {
 
   const cart = carts.get(userId) ?? []
   if (cart.length === 0) {
-    log.warn(`Checkout failed for user ${userId}: cart is empty`)
+    console.warn(`Checkout failed for user ${userId}: cart is empty`)
     return res.status(400).json({ error: 'Cart is empty' })
   }
 
@@ -200,11 +201,11 @@ app.post('/api/orders', (req, res) => {
   for (const item of cart) {
     const product = PRODUCTS.find(p => p.id === item.productId)
     if (!product) {
-      log.warn(`Order rejected for user ${userId}: product ${item.productId} not found`)
+      console.warn(`Order rejected for user ${userId}: product ${item.productId} not found`)
       return res.status(400).json({ error: `Product ${item.productId} not found` })
     }
     if (product.stock < item.qty) {
-      log.warn(`Order rejected for user ${userId}: not enough stock for ${product.name} (want ${item.qty}, have ${product.stock})`)
+      console.warn(`Order rejected for user ${userId}: not enough stock for ${product.name} (want ${item.qty}, have ${product.stock})`)
       return res.status(400).json({ error: `Insufficient stock for "${product.name}": requested ${item.qty}, available ${product.stock}` })
     }
   }
@@ -223,7 +224,7 @@ app.post('/api/orders', (req, res) => {
     const tier = DISCOUNT_TIERS.find(t => rawTotal >= t.threshold)
     const savings = +(rawTotal * (tier!.percentage / 100)).toFixed(2)
     total = +(rawTotal - savings).toFixed(2)
-    log.info(`Loyalty discount applied for user ${userId}: saved $${savings} (${tier!.percentage}% off $${rawTotal}), new total $${total}`)
+    console.log(`Loyalty discount applied for user ${userId}: saved $${savings} (${tier!.percentage}% off $${rawTotal}), new total $${total}`)
   }
 
   const order: Order = {
@@ -238,7 +239,7 @@ app.post('/api/orders', (req, res) => {
   orders.push(order)
   carts.delete(userId)   // clear cart after checkout
 
-  log.info(`Order ${order.id} placed for user ${userId}: ${items.length} item(s), total $${order.total}`)
+  console.log(`Order ${order.id} placed for user ${userId}: ${items.length} item(s), total $${order.total}`)
 
   res.status(201).json(order)
 })
@@ -266,23 +267,23 @@ app.post('/api/auth/login', (req, res) => {
   const { username } = req.body
   if (!username) return res.status(400).json({ error: 'username required' })
   const userId = `user-${username.toLowerCase().replace(/\s+/g, '-')}`
-  log.info(`User logged in: ${username} (${userId})`)
+  console.log(`User logged in: ${username} (${userId})`)
   res.json({ userId, username, token: `tok-${uuidv4()}` })
 })
 
 // ── 404 fallback ──────────────────────────────────────────────────────────────
 app.use((req, res) => {
-  log.warn(`404 ${req.method} ${req.path}`)
+  console.warn(`404 ${req.method} ${req.path}`)
   res.status(404).json({ error: 'Not found' })
 })
 
 // ── Error handler ─────────────────────────────────────────────────────────────
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  log.error(`Unhandled error: ${err.message}\n${err.stack}`)
+  console.error(`Unhandled error: ${err.message}\n${err.stack}`)
   res.status(500).json({ error: 'Internal server error', message: err.message })
 })
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  log.info(`starwars-shop listening on port ${PORT}`)
+  console.log(`starwars-shop listening on port ${PORT}`)
 })

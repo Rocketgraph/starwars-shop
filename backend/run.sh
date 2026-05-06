@@ -1,23 +1,13 @@
 #!/bin/bash
 set -e
 
-# ── OpenTelemetry auto-instrumentation ────────────────────────────────────────
-export NODE_OPTIONS="--require @opentelemetry/auto-instrumentations-node/register"
-
+# ── OpenTelemetry config ──────────────────────────────────────────────────────
+# SDK is initialised manually in instrumentation.ts (imported at top of server.ts)
 export OTEL_SERVICE_NAME="starwars-shop"
-
-export OTEL_TRACES_EXPORTER="otlp"
-export OTEL_METRICS_EXPORTER="otlp"
-export OTEL_LOGS_EXPORTER="otlp"
-
-export OTEL_EXPORTER_OTLP_TRACES_PROTOCOL="http/protobuf"
-export OTEL_EXPORTER_OTLP_METRICS_PROTOCOL="http/protobuf"
-export OTEL_EXPORTER_OTLP_LOGS_PROTOCOL="http/protobuf"
 
 export OTEL_EXPORTER_OTLP_ENDPOINT="https://ingress.us-east-2.rocketgraph.app"
 export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer rg_live_3e39cac127c247eaa2f7f57b0fc18437"
 
-export OTEL_NODE_DISABLED_INSTRUMENTATIONS="pino"
 export OTEL_LOG_LEVEL=warn
 
 # BatchLogRecordProcessor tuning
