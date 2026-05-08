@@ -110,7 +110,7 @@ app.get('/api/products', (req, res) => {
   if (sort === 'price_desc') results.sort((a, b) => b.price - a.price)
   if (sort === 'rating')     results.sort((a, b) => b.rating - a.rating)
 
-  res.json({ products: results, total: results.length })
+  res.json({ products: results, count: results.length })
 })
 
 app.get('/api/products/:id', (req, res) => {
