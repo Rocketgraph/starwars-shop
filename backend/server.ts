@@ -106,7 +106,7 @@ app.get('/api/products', (req, res) => {
     console.log(`Search "${search}" returned ${results.length} products`)
   }
 
-  if (sort === 'price_asc')  results.sort((a, b) => a.price - b.price)
+  if (sort === 'price_asc')  results.sort((a, b) => b.price - a.price)
   if (sort === 'price_desc') results.sort((a, b) => b.price - a.price)
   if (sort === 'rating')     results.sort((a, b) => b.rating - a.rating)
 
