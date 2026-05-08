@@ -23,30 +23,30 @@ interface Product {
   stock: number
   description: string
   image: string
-  stars: number
+  rating: number
 }
 
 const PRODUCTS: Product[] = [
-  { id: 'p1',  name: "Luke's Lightsaber",          price: 299.99,   category: 'weapons',      stock: 10, stars: 4.9, image: '⚔️',  description: "Skywalker's iconic blue blade. Constructed with a Adegan crystal." },
-  { id: 'p2',  name: "Darth Vader's Lightsaber",   price: 349.99,   category: 'weapons',      stock: 8,  stars: 4.8, image: '🔴',  description: "Crimson-bladed terror. The galaxy bows before it." },
-  { id: 'p3',  name: "Yoda's Lightsaber",           price: 499.99,   category: 'weapons',      stock: 3,  stars: 5.0, image: '💚',  description: "Shoto-style. Small but the Force flows strong through it." },
-  { id: 'p4',  name: "Darksaber",                   price: 899.99,   category: 'weapons',      stock: 500, stars: 5.0, image: '🖤',  description: "Unique black-bladed saber. Leads Mandalore." },
-  { id: 'p5',  name: "R2-D2 Astromech Droid",       price: 1299.99,  category: 'droids',       stock: 4,  stars: 4.9, image: '🤖',  description: "Loyal, resourceful, and will save your life at least twice." },
-  { id: 'p6',  name: "C-3PO Protocol Droid",        price: 999.99,   category: 'droids',       stock: 6,  stars: 4.5, image: '🤖',  description: "Fluent in over 6 million forms of communication. Worries in all of them." },
-  { id: 'p7',  name: "BB-8 Unit",                   price: 799.99,   category: 'droids',       stock: 500, stars: 4.8, image: '⚽',  description: "Spherical, loyal, fast. The Resistance's most optimistic asset." },
-  { id: 'p8',  name: "IG-11 Bounty Hunter Droid",   price: 1599.99,  category: 'droids',       stock: 2,  stars: 4.7, image: '🦾',  description: "Nurse, hunter, and self-destruct unit. Reprogrammable." },
-  { id: 'p9',  name: "Mandalorian Helmet",           price: 599.99,   category: 'armor',        stock: 500, stars: 5.0, image: '⛑️',  description: "Beskar. This is the way." },
-  { id: 'p10', name: "Stormtrooper Armor Set",       price: 449.99,   category: 'armor',        stock: 20, stars: 3.2, image: '🪖',  description: "Standard Imperial issue. Warning: accuracy not included." },
-  { id: 'p11', name: "Clone Trooper Phase II Armor", price: 699.99,   category: 'armor',        stock: 500, stars: 4.6, image: '🛡️',  description: "Republic-era armor. Customizable colors and markings." },
-  { id: 'p12', name: "Millennium Falcon",            price: 95000.00, category: 'ships',        stock: 1,  stars: 4.9, image: '🚀',  description: "She may not look like much but she's got it where it counts." },
-  { id: 'p13', name: "X-Wing Starfighter",           price: 45000.00, category: 'ships',        stock: 3,  stars: 4.8, image: '✈️',  description: "S-foils in attack position. Standard Rebel Alliance fighter." },
-  { id: 'p14', name: "TIE Fighter",                  price: 22000.00, category: 'ships',        stock: 12, stars: 3.8, image: '🛸',  description: "Twin Ion Engine. Loud, fast, no hyperdrive. Ask your supervisor for escort." },
-  { id: 'p15', name: "Kyber Crystal",                price: 89.99,    category: 'force',        stock: 40, stars: 4.7, image: '💎',  description: "Pure Force energy. The heart of every lightsaber." },
-  { id: 'p16', name: "Jedi Holocron",                price: 249.99,   category: 'force',        stock: 5,  stars: 4.9, image: '🔮',  description: "Ancient repository of Jedi knowledge. Requires Force sensitivity." },
-  { id: 'p17', name: "Darth Bane's Sith Holocron",  price: 399.99,   category: 'force',        stock: 2,  stars: 4.6, image: '⬛',  description: "Knowledge of the Rule of Two. Handle with care." },
-  { id: 'p18', name: "Millennium Falcon LEGO Set",   price: 849.99,   category: 'collectibles', stock: 25, stars: 4.9, image: '🧱',  description: "7,541 pieces. Approximately 12 parsecs of assembly time." },
-  { id: 'p19', name: "Death Star Blueprint",         price: 9999.99,  category: 'collectibles', stock: 1,  stars: 2.0, image: '💀',  description: "Original stolen plans. Has one known flaw. Priced accordingly." },
-  { id: 'p20', name: "Han Solo in Carbonite Statue", price: 1499.99,  category: 'collectibles', stock: 3,  stars: 4.5, image: '🗿',  description: "Life-size. Jabba-approved. Very decorative." },
+  { id: 'p1',  name: "Luke's Lightsaber",          price: 299.99,   category: 'weapons',      stock: 10, rating: 4.9, image: '⚔️',  description: "Skywalker's iconic blue blade. Constructed with a Adegan crystal." },
+  { id: 'p2',  name: "Darth Vader's Lightsaber",   price: 349.99,   category: 'weapons',      stock: 8,  rating: 4.8, image: '🔴',  description: "Crimson-bladed terror. The galaxy bows before it." },
+  { id: 'p3',  name: "Yoda's Lightsaber",           price: 499.99,   category: 'weapons',      stock: 3,  rating: 5.0, image: '💚',  description: "Shoto-style. Small but the Force flows strong through it." },
+  { id: 'p4',  name: "Darksaber",                   price: 899.99,   category: 'weapons',      stock: 500, rating: 5.0, image: '🖤',  description: "Unique black-bladed saber. Leads Mandalore." },
+  { id: 'p5',  name: "R2-D2 Astromech Droid",       price: 1299.99,  category: 'droids',       stock: 4,  rating: 4.9, image: '🤖',  description: "Loyal, resourceful, and will save your life at least twice." },
+  { id: 'p6',  name: "C-3PO Protocol Droid",        price: 999.99,   category: 'droids',       stock: 6,  rating: 4.5, image: '🤖',  description: "Fluent in over 6 million forms of communication. Worries in all of them." },
+  { id: 'p7',  name: "BB-8 Unit",                   price: 799.99,   category: 'droids',       stock: 500, rating: 4.8, image: '⚽',  description: "Spherical, loyal, fast. The Resistance's most optimistic asset." },
+  { id: 'p8',  name: "IG-11 Bounty Hunter Droid",   price: 1599.99,  category: 'droids',       stock: 2,  rating: 4.7, image: '🦾',  description: "Nurse, hunter, and self-destruct unit. Reprogrammable." },
+  { id: 'p9',  name: "Mandalorian Helmet",           price: 599.99,   category: 'armor',        stock: 500, rating: 5.0, image: '⛑️',  description: "Beskar. This is the way." },
+  { id: 'p10', name: "Stormtrooper Armor Set",       price: 449.99,   category: 'armor',        stock: 20, rating: 3.2, image: '🪖',  description: "Standard Imperial issue. Warning: accuracy not included." },
+  { id: 'p11', name: "Clone Trooper Phase II Armor", price: 699.99,   category: 'armor',        stock: 500, rating: 4.6, image: '🛡️',  description: "Republic-era armor. Customizable colors and markings." },
+  { id: 'p12', name: "Millennium Falcon",            price: 95000.00, category: 'ships',        stock: 1,  rating: 4.9, image: '🚀',  description: "She may not look like much but she's got it where it counts." },
+  { id: 'p13', name: "X-Wing Starfighter",           price: 45000.00, category: 'ships',        stock: 3,  rating: 4.8, image: '✈️',  description: "S-foils in attack position. Standard Rebel Alliance fighter." },
+  { id: 'p14', name: "TIE Fighter",                  price: 22000.00, category: 'ships',        stock: 12, rating: 3.8, image: '🛸',  description: "Twin Ion Engine. Loud, fast, no hyperdrive. Ask your supervisor for escort." },
+  { id: 'p15', name: "Kyber Crystal",                price: 89.99,    category: 'force',        stock: 40, rating: 4.7, image: '💎',  description: "Pure Force energy. The heart of every lightsaber." },
+  { id: 'p16', name: "Jedi Holocron",                price: 249.99,   category: 'force',        stock: 5,  rating: 4.9, image: '🔮',  description: "Ancient repository of Jedi knowledge. Requires Force sensitivity." },
+  { id: 'p17', name: "Darth Bane's Sith Holocron",  price: 399.99,   category: 'force',        stock: 2,  rating: 4.6, image: '⬛',  description: "Knowledge of the Rule of Two. Handle with care." },
+  { id: 'p18', name: "Millennium Falcon LEGO Set",   price: 849.99,   category: 'collectibles', stock: 25, rating: 4.9, image: '🧱',  description: "7,541 pieces. Approximately 12 parsecs of assembly time." },
+  { id: 'p19', name: "Death Star Blueprint",         price: 9999.99,  category: 'collectibles', stock: 1,  rating: 2.0, image: '💀',  description: "Original stolen plans. Has one known flaw. Priced accordingly." },
+  { id: 'p20', name: "Han Solo in Carbonite Statue", price: 1499.99,  category: 'collectibles', stock: 3,  rating: 4.5, image: '🗿',  description: "Life-size. Jabba-approved. Very decorative." },
 ]
 
 // ── Loyalty discount tiers ────────────────────────────────────────────────────
@@ -110,7 +110,7 @@ app.get('/api/products', (req, res) => {
   if (sort === 'price_desc') results.sort((a, b) => b.price - a.price)
   if (sort === 'rating')     results.sort((a, b) => b.rating - a.rating)
 
-  res.json({ products: results, total: results.length })
+  res.json({ products: results, count: results.length })
 })
 
 app.get('/api/products/:id', (req, res) => {
