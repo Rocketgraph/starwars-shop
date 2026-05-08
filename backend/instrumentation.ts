@@ -2,14 +2,28 @@ import { NodeSDK } from '@opentelemetry/sdk-node'
 import { resourceFromAttributes } from '@opentelemetry/resources'
 import { SEMRESATTRS_SERVICE_NAME } from '@opentelemetry/semantic-conventions'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto'
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import pino from 'pino'
 
 const ENDPOINT = 'https://ingress.us-east-2.rocketgraph.app'
 const API_KEY  = process.env.ROCKETGRAPH_API_KEY ?? ''
+const AUTH     = { Authorization: `Bearer ${API_KEY}` }
 
 const sdk = new NodeSDK({
   resource: resourceFromAttributes({
     [SEMRESATTRS_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME ?? 'my-service',
+  }),
+  traceExporter: new OTLPTraceExporter({
+    url: `${ENDPOINT}/v1/traces`,
+    headers: AUTH,
+  }),
+  metricReader: new PeriodicExportingMetricReader({
+    exporter: new OTLPMetricExporter({
+      url: `${ENDPOINT}/v1/metrics`,
+      headers: AUTH,
+    }),
   }),
   instrumentations: [getNodeAutoInstrumentations()],
 })

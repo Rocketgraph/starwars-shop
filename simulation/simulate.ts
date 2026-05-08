@@ -12,7 +12,7 @@
  *   npx tsx simulate.ts --burst    # high-volume spike
  */
 
-const BASE = process.env.API_URL ?? 'http://localhost:4000'
+const BASE = process.env.API_URL ?? 'http://localhost:4008'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
